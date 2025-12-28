@@ -1,5 +1,4 @@
 import json
-import os
 from pathlib import Path
 
 from aiohttp import web
@@ -7,12 +6,10 @@ from aiohttp import web
 
 # runs after providers are configured but before server is run
 def install(ctx):
-
-    # Load greetings
-    # Load greetings
-    greetings_path = Path(__file__).parent / 'ui' / 'greetings.json'
+    # Load greetings from extension's `./ui/greetings.json`
+    greetings_path = Path(__file__).parent / "ui" / "greetings.json"
     if greetings_path.exists():
-        with open(greetings_path, 'r') as f:
+        with open(greetings_path) as f:
             greetings = json.load(f)
     else:
         greetings = ["Merry Christmas!"]
@@ -21,20 +18,28 @@ def install(ctx):
 
     async def greet(request):
         nonlocal count
-        name = request.query.get('name')
+        name = request.query.get("name")
         if not name:
             data = await request.post()
-            name = data.get('name')
+            name = data.get("name")
 
         if not name:
-            name = 'Stranger'
+            name = "Stranger"
 
         greeting = greetings[count % len(greetings)]
         count += 1
-        return web.json_response({"result":f"Hello {name}, {greeting}"})
+        return web.json_response({"result": f"Hello {name}, {greeting}"})
 
     ctx.add_get("greet", greet)
     ctx.add_post("greet", greet)
+
+    async def story(request):
+        model = request.query.get("model")
+        chat = ctx.chat_request(model=model, text="Tell me a short Christmas tale")
+        response = await ctx.chat_completion(chat)
+        return web.json_response(response)
+
+    ctx.add_get("story", story)
 
 
 # register install extension handler
