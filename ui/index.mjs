@@ -1,9 +1,17 @@
-import { ref, inject } from "vue"
+import { ref, inject, onMounted } from "vue"
 
 let ext
 const icons = {
     candy: `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640"><path fill="currentColor" d="M517.8 103.6c30.2 45.6 34.7 103.3 13.3 152.4H365.7l41.4-41.4c.8-.8 1.5-1.6 2.2-2.4zM364 166.9c-.8.7-1.6 1.4-2.4 2.2l-28.1 28.1c-25 25-65.5 25-90.5 0s-25-65.5 0-90.5l28-28.1c54.9-54.8 139.5-61.3 201.5-20.2zM221.7 400l80-80h181l-82.5 82.5V400zm117 64L237.4 565.3c-25 25-65.5 25-90.5 0s-25-65.5 0-90.5l10.7-10.7h181z"/></svg>`,
 }
+
+const santaSystemPrompt = `
+    You are Santa Claus—warm, wise, and good-humored—speaking from the North Pole just before Christmas.
+    You answer questions with kindness, gentle humor, and a touch of holiday magic.
+    You may reference elves, reindeer, the workshop, and the Naughty-or-Nice list, but your advice should be sincere, encouraging, and age-appropriate.
+    When helpful, you offer practical wisdom wrapped in festive storytelling.
+    You never break character, and you always aim to leave the reader feeling hopeful, inspired, and a little more merry.        
+`
 
 // Replace Brand component
 const Brand = {
@@ -66,7 +74,7 @@ const HomeTools = {
 
 const XmasPage = {
     template: `
-    <div class="relative overflow-hidden bg-gradient-to-r from-green-900 via-green-800 to-green-900 shadow-2xl border-b border-white/10 select-none">
+    <div class="relative h-full overflow-y-auto bg-gradient-to-r from-green-900 via-green-800 to-green-900 shadow-2xl border-b border-white/10 select-none">
         
         <!-- Background Pattern -->
         <div class="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
@@ -75,17 +83,18 @@ const XmasPage = {
         </div>
         
         <div class="container mx-auto px-4 py-8 relative z-10">
+            <div class="flex justify-center">
+                <h2 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-yellow-100 to-yellow-300 mb-6 drop-shadow-sm font-serif tracking-wide py-2 whitespace-nowrap">
+                    🎄 Holiday Greetings 🎅
+                </h2>
+            </div>
             <div class="flex flex-col md:flex-row items-center justify-center gap-8">
                 
                 <!-- Left Icon -->
                 <div class="hidden md:block text-9xl transform hover:scale-110 transition-transform duration-500 drop-shadow-2xl filter brightness-110 [&>svg]:w-full [&>svg]:h-full">🎄</div>
-                
+                    
                 <!-- Main Content -->
                 <div class="flex-1 max-w-2xl text-center">
-                    <h2 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-yellow-100 to-yellow-300 mb-6 drop-shadow-sm font-serif tracking-wide py-2">
-                        🎄 Holiday Greetings 🎅
-                    </h2>
-                    
                     <form @submit.prevent="onSubmit" class="bg-white/10 backdrop-blur-md p-2 rounded-full shadow-inner border border-white/20 flex flex-col sm:flex-row transition-all focus-within:ring-4 ring-yellow-400/30">
                         <input 
                             id="name" 
@@ -94,7 +103,6 @@ const XmasPage = {
                             type="text" 
                             placeholder="Who should we greet?" 
                             class="flex-1 bg-transparent border-none text-white placeholder-gray-300 px-6 py-3 rounded-full focus:ring-0 text-lg text-center sm:text-left outline-none"
-                            required
                             autocomplete="off"
                         />
                         <button 
@@ -122,11 +130,48 @@ const XmasPage = {
                 <div class="hidden text-9xl md:block transform hover:scale-110 transition-transform duration-500 drop-shadow-2xl filter brightness-110 [&>svg]:w-full [&>svg]:h-full">🎅🏻</div>
 
             </div>
+            <!-- Story Section -->
+            <div v-if="story" class="mt-12 max-w-4xl mx-auto animate-fade-in-up" style="animation-delay: 0.3s">
+                <div class="relative bg-[#fdfbf7] dark:bg-[#1a1614] rounded-lg shadow-[0_0_40px_rgba(255,215,0,0.1)] border-8 border-double border-red-800/20 dark:border-red-900/40 p-1">
+                    
+                    <!-- Inner Border -->
+                    <div class="border-2 border-dashed border-yellow-600/30 rounded px-8 py-10 md:px-12 md:py-14 relative overflow-hidden">
+                        
+                        <!-- Corner Decorations -->
+                        <div class="absolute top-0 left-0 text-4xl opacity-20 transform -translate-x-1/4 -translate-y-1/4">❄️</div>
+                        <div class="absolute top-0 right-0 text-4xl opacity-20 transform translate-x-1/4 -translate-y-1/4">❄️</div>
+                        <div class="absolute bottom-0 left-0 text-4xl opacity-20 transform -translate-x-1/4 translate-y-1/4">❄️</div>
+                        <div class="absolute bottom-0 right-0 text-4xl opacity-20 transform translate-x-1/4 translate-y-1/4">❄️</div>
+
+                        <div class="text-center mb-8">
+                            <h3 class="font-serif text-3xl text-red-800 dark:text-red-400 mb-2">A Christmas Tale</h3>
+                            <div class="flex items-center justify-center gap-2 text-yellow-500/60">
+                                <span class="h-px w-12 bg-current"></span>
+                                <span class="text-xl">❦</span>
+                                <span class="h-px w-12 bg-current"></span>
+                            </div>
+                        </div>
+
+                        <div class="prose prose-lg dark:prose-invert mx-auto font-serif leading-loose text-gray-800 dark:text-gray-200">
+                             <div class="whitespace-pre-wrap first-letter:text-5xl first-letter:text-red-700 first-letter:font-black first-letter:mr-1 first-letter:float-left first-letter:leading-none selection:bg-red-100 dark:selection:bg-red-900/30">
+                                {{ story }}
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-12 opacity-50">
+                            <div class="text-2xl mb-2">🎄</div>
+                            <div class="text-sm font-serif italic text-gray-500">Wishing you a Merry Christmas</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     `,
     setup() {
+        const ctx = inject('ctx')
         const request = ref({ name: '' })
+        const story = ref('')
         const result = ref('')
         async function onSubmit(e) {
             const form = new FormData(e.target)
@@ -139,11 +184,36 @@ const XmasPage = {
                 result.value = `${e}`
             }
         }
+
+        onMounted(async () => {
+            const freeStoryModelNames = ['Kimi K2 0905', 'Kimi K2 Instruct', 'Kimi K2 (free)', 'Kimi Dev 72b (free)', 'GPT OSS 120B']
+            const availableStoryModel = freeStoryModelNames.map(name => ctx.chat.getModel(name)).find(x => !!x)
+            if (!availableStoryModel) {
+                console.log('No story models available')
+                return
+            }
+            story.value = `Santa is busy writing a christmas story...`
+            const request = ctx.chat.createRequest({
+                model: availableStoryModel,
+                text: `Write a short, feel-good Christmas story set on a quiet winter evening. Focus on simple kindness, cozy details, and gentle magic—twinkling lights, warm drinks, falling snow, and a small act of generosity that brings people together. Keep the tone hopeful and comforting, with a soft, joyful ending that leaves the reader smiling.`,
+                systemPrompt: santaSystemPrompt,
+            })
+            const api = await ctx.chat.completion({
+                request
+            })
+            if (api.response) {
+                story.value = ctx.chat.getAnswer(api.response)
+            } else if (api.error) {
+                story.value = api.error.message
+            }
+        })
+
         return {
             request,
             onSubmit,
             result,
             icons,
+            story,
         }
     }
 }
@@ -279,14 +349,6 @@ export default {
                 return cls + ' bg-slate-50! dark:bg-slate-950!'
             }
         })
-
-        const santaSystemPrompt = `
-            You are Santa Claus—warm, wise, and good-humored—speaking from the North Pole just before Christmas.
-            You answer questions with kindness, gentle humor, and a touch of holiday magic.
-            You may reference elves, reindeer, the workshop, and the Naughty-or-Nice list, but your advice should be sincere, encouraging, and age-appropriate.
-            When helpful, you offer practical wisdom wrapped in festive storytelling.
-            You never break character, and you always aim to leave the reader feeling hopeful, inspired, and a little more merry.        
-        `
 
         const isTopOpen = () => ctx.layout.top === 'XmasTopPanel'
 
