@@ -30,8 +30,8 @@ def install(ctx):
         count += 1
         return web.json_response({"result": f"Hello {name}, {greeting}"})
 
-    ctx.add_get("greet", greet)
-    ctx.add_post("greet", greet)
+    ctx.add_get("greet", greet)  # GET  /ext/xmas/greet
+    ctx.add_post("greet", greet)  # POST /ext/xmas/greet
 
     async def story(request):
         model = request.query.get("model")
@@ -39,7 +39,7 @@ def install(ctx):
         response = await ctx.chat_completion(chat)
         return web.json_response(response)
 
-    ctx.add_get("story", story)
+    ctx.add_get("story", story)  # GET /ext/xmas/story
 
 
 # register install extension handler
