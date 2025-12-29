@@ -1,6 +1,8 @@
-import { ref, inject, onMounted } from "vue"
+import { ref, inject, watch, onMounted } from "vue"
 
+// Scope for 'xmas' extension
 let ext
+
 const icons = {
     candy: `<svg xmlns="http://www.w3.org/2000/svg" width="640" height="640" viewBox="0 0 640 640"><path fill="currentColor" d="M517.8 103.6c30.2 45.6 34.7 103.3 13.3 152.4H365.7l41.4-41.4c.8-.8 1.5-1.6 2.2-2.4zM364 166.9c-.8.7-1.6 1.4-2.4 2.2l-28.1 28.1c-25 25-65.5 25-90.5 0s-25-65.5 0-90.5l28-28.1c54.9-54.8 139.5-61.3 201.5-20.2zM221.7 400l80-80h181l-82.5 82.5V400zm117 64L237.4 565.3c-25 25-65.5 25-90.5 0s-25-65.5 0-90.5l10.7-10.7h181z"/></svg>`,
 }
@@ -99,7 +101,7 @@ const XmasPage = {
                         <input 
                             id="name" 
                             name="name"
-                            v-model="request.name"
+                            v-model="ext.prefs.name"
                             type="text" 
                             placeholder="Who should we greet?" 
                             class="flex-1 bg-transparent border-none text-white placeholder-gray-300 px-6 py-3 rounded-full focus:ring-0 text-lg text-center sm:text-left outline-none"
@@ -170,11 +172,14 @@ const XmasPage = {
     `,
     setup() {
         const ctx = inject('ctx')
-        const request = ref({ name: '' })
+
         const result = ref('')
+
         async function onSubmit(e) {
             generateStory()
+            ext.savePrefs() // saves {"name":"..."} to localStorage['llms.xmas']
             const form = new FormData(e.target)
+            // POST /ext/xmas/greet (multipart/form-data)
             const res = await ext.postForm('/greet', {
                 body: form
             })
@@ -216,7 +221,6 @@ const XmasPage = {
 
         return {
             ext,
-            request,
             onSubmit,
             result,
             icons,
@@ -297,14 +301,17 @@ const XmasTopPanel = {
 
 export default {
     install(ctx) {
-
+        // create extension scope
         ext = ctx.scope('xmas')
+
         ctx.components({
+            // Replaces built-in UI Components
             Brand,
             Welcome,
+            HomeTools,
+            // Registers other custom components used in this UI Extension
             XmasPage,
             XmasTopPanel,
-            HomeTools,
         })
 
         ctx.setLeftIcons({
@@ -377,6 +384,13 @@ export default {
     },
 
     async load(ctx) {
-        ctx.state.greetings = await ext.getJson("/greetings.json")
+        // GET /ext/xmas/greetings.json
+        const greetings = await ext.getJson("/greetings.json")
+
+        // maintain in local reactive state in (localized to extension)
+        ext.state.greetings = greetings
+
+        // maintain in global reactive state
+        ctx.state.greetings = greetings
     }
 }
