@@ -131,7 +131,7 @@ const XmasPage = {
 
             </div>
             <!-- Story Section -->
-            <div v-if="story" class="mt-12 max-w-4xl mx-auto animate-fade-in-up" style="animation-delay: 0.3s">
+            <div v-if="ext.state.story" class="mt-12 max-w-4xl mx-auto animate-fade-in-up" style="animation-delay: 0.3s">
                 <div class="relative bg-[#fdfbf7] dark:bg-[#1a1614] rounded-lg shadow-[0_0_40px_rgba(255,215,0,0.1)] border-8 border-double border-red-800/20 dark:border-red-900/40 p-1">
                     
                     <!-- Inner Border -->
@@ -154,7 +154,7 @@ const XmasPage = {
 
                         <div class="prose prose-lg dark:prose-invert mx-auto font-serif leading-loose text-gray-800 dark:text-gray-200">
                              <div class="whitespace-pre-wrap first-letter:text-5xl first-letter:text-red-700 first-letter:font-black first-letter:mr-1 first-letter:float-left first-letter:leading-none selection:bg-red-100 dark:selection:bg-red-900/30">
-                                {{ story }}
+                                {{ ext.state.story }}
                             </div>
                         </div>
 
@@ -171,9 +171,9 @@ const XmasPage = {
     setup() {
         const ctx = inject('ctx')
         const request = ref({ name: '' })
-        const story = ref('')
         const result = ref('')
         async function onSubmit(e) {
+            generateStory()
             const form = new FormData(e.target)
             const res = await ext.postForm('/greet', {
                 body: form
@@ -185,14 +185,14 @@ const XmasPage = {
             }
         }
 
-        onMounted(async () => {
+        async function generateStory() {
             const freeStoryModelNames = ['Kimi K2 0905', 'Kimi K2 Instruct', 'Kimi K2 (free)', 'Kimi Dev 72b (free)', 'GPT OSS 120B']
             const availableStoryModel = freeStoryModelNames.map(name => ctx.chat.getModel(name)).find(x => !!x)
             if (!availableStoryModel) {
                 console.log('No story models available')
                 return
             }
-            story.value = `Santa is busy writing a christmas story...`
+            ext.state.story = `Santa begins to tell you a christmas story...`
             const request = ctx.chat.createRequest({
                 model: availableStoryModel,
                 text: `Write a short, feel-good Christmas story set on a quiet winter evening. Focus on simple kindness, cozy details, and gentle magic—twinkling lights, warm drinks, falling snow, and a small act of generosity that brings people together. Keep the tone hopeful and comforting, with a soft, joyful ending that leaves the reader smiling.`,
@@ -202,18 +202,24 @@ const XmasPage = {
                 request
             })
             if (api.response) {
-                story.value = ctx.chat.getAnswer(api.response)
+                ext.state.story = ctx.chat.getAnswer(api.response)
             } else if (api.error) {
-                story.value = api.error.message
+                ext.state.story = api.error.message
+            }
+        }
+
+        onMounted(() => {
+            if (!ext.state.story) {
+                generateStory()
             }
         })
 
         return {
+            ext,
             request,
             onSubmit,
             result,
             icons,
-            story,
         }
     }
 }
