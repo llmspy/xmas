@@ -340,7 +340,10 @@ export default {
                         const ctx = inject('ctx')
                         async function toggle() {
                             if (ctx.toggleTop('XmasTopPanel')) {
-                                ctx.threads.startNewThread({ title: 'Ask Santa' })
+                                ctx.threads.startNewThread({
+                                    title: 'Ask Santa',
+                                    model: ctx.chat.getSelectedModel(),
+                                })
                             }
                         }
                         return {
