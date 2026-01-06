@@ -382,12 +382,17 @@ export default {
 
     async load(ctx) {
         // GET /ext/xmas/greetings.json
-        const greetings = await ext.getJson("/greetings.json")
+        const api = await ext.getJson("/greetings.json")
 
-        // maintain in local reactive state in (localized to extension)
-        ext.state.greetings = greetings
+        const greetings = api.response
+        if (greetings) {
+            // maintain in local reactive state in (localized to extension)
+            ext.state.greetings = greetings
 
-        // maintain in global reactive state
-        ctx.state.greetings = greetings
+            // maintain in global reactive state
+            ctx.state.greetings = greetings
+        } else {
+            ctx.setError(api.error)
+        }
     }
 }
