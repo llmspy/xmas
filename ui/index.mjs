@@ -69,11 +69,6 @@ const Welcome = {
     }
 }
 
-// Replace HomeTools features
-const HomeTools = {
-    template: `<DarkModeToggle class="mt-4" />`,
-}
-
 const XmasPage = {
     template: `
     <div class="relative h-full overflow-y-auto bg-gradient-to-r from-green-900 via-green-800 to-green-900 shadow-2xl border-b border-white/10 select-none">
@@ -308,7 +303,6 @@ export default {
             // Replaces built-in UI Components
             Brand,
             Welcome,
-            HomeTools,
             // Registers other custom components used in this UI Extension
             XmasPage,
             XmasTopPanel,
